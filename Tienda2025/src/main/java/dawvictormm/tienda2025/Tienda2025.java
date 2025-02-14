@@ -687,6 +687,58 @@ public void ordenarArticulosPorDemanda() {
 }
 
     
+    public long contarClientesConPedidos() {
+    return pedidos.stream()
+            .map(p -> p.getClientePedido().getDni())
+            .distinct()
+            .count();
+}
+    public double calcularValorInventario() {
+    return articulos.values().stream()
+            .mapToDouble(a -> a.getExistencias() * a.getPvp())
+            .sum();
+}
+    
+    //Una clase que tendremos que poner en un archivo distinto
+    public class ComparaArticulosPorNombre implements Comparator<Articulo> {
+
+    @Override
+    public int compare(Articulo a1, Articulo a2) {
+        return a1.getDescripcion().compareToIgnoreCase(a2.getDescripcion());
+    }
+}
+    
+    public void ordenarArticulosPorNombre() {
+    articulos.values().stream()
+            .sorted(new ComparaArticulosPorNombre()) // Usa el comparador creado
+            .forEach(System.out::println);
+}
+    
+    public double totalGastadoPorCliente(String dni) {
+    return pedidos.stream()
+            .filter(p -> p.getClientePedido().getDni().equals(dni)) // Filtra pedidos del cliente
+            .mapToDouble(this::totalPedido) // Obtiene el total de cada pedido
+            .sum(); // Suma los totales
+}
+    public List<Articulo> obtenerArticulosAgotados() {
+    return articulos.values().stream()
+            .filter(a -> a.getExistencias() == 0) // Filtra los sin stock
+            .toList(); // Devuelve la lista
+}
+    public void listarPedidosPorImporte() {
+    pedidos.stream()
+           .sorted(Comparator.comparing(this::totalPedido).reversed())
+           .forEach(System.out::println);
+}
+    public void aplicarDescuento(double porcentaje) {
+    articulos.values().forEach(a -> a.setPvp(a.getPvp() * (1 - porcentaje / 100)));
+}
+    
+   public Articulo obtenerArticuloMasVendido() {
+    return articulos.values().stream()
+            .max(Comparator.comparing(a -> cantidadTotalVendida(a.getIdArticulo()))) // Compara por cantidad vendida
+            .orElse(null); // Devuelve null si no hay artículos
+}
     
     
 }
